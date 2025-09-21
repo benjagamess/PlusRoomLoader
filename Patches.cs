@@ -72,4 +72,28 @@ namespace RewriteRoomLoader
             }
         }
     }
+
+    /*[HarmonyPatch(typeof(BaseGameManager), "Update")]
+    class TemporaryTestPatch
+    {
+        static void Postfix()
+        {
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                KeyValuePair<ExtendedRoomAsset, RoomJsonData> test = RewriteRoomLoader.Instance.loadedRooms.ElementAt(0);
+
+                Debug.Log("--- TEST ROOM DATA LOG ---");
+                Debug.Log("NAME: " + test.Key.name);
+                Debug.Log("TYPE: " + test.Value.roomType);
+                Debug.Log("FLOOR SPAWNS: " + test.Value.floorSpawns);
+                Debug.Log("FLOOR TYPE SPAWNS: " + test.Value.floorTypeSpawns);
+                Debug.Log("SPAWN WEIGHTS: " + test.Value.spawnWeights);
+                Debug.Log("MIN ITEM VALUE: " + test.Value.minItemValue);
+                Debug.Log("MAX ITEM VALUE: " + test.Value.maxItemValue);
+                Debug.Log("WINDOW CHANCE: " + test.Value.windowChance);
+                Debug.Log("IN ENDLESS: " + test.Value.inEndless);
+                Debug.Log("--------------------------");
+            }
+        }
+    }*/
 }

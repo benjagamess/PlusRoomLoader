@@ -92,6 +92,10 @@ namespace RewriteRoomLoader
 
                 ExtendedRoomAsset roomAsset;
                 roomAsset = LevelImporter.CreateRoomAsset(BaldiRoomAsset.Read(new BinaryReader(File.Open(room, FileMode.Open))));
+                if (roomAsset.potentialDoorPositions.Count < 1 && roomAsset.forcedDoorPositions.Count < 1)
+                {
+                    Debug.Log("Room " + roomName + " has no door positions! Room will not be loaded.");
+                }
                 roomAsset.name = "CUSTOM_" + roomName;
                 roomAsset.minItemValue = roomData.minItemValue;
                 roomAsset.maxItemValue = roomData.maxItemValue;
