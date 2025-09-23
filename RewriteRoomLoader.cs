@@ -122,7 +122,7 @@ namespace RewriteRoomLoader
                         switch (room.Value.roomType)
                         {
                             default: // Halls
-                                lds[i].potentialPrePlotSpecialHalls = lds[i].potentialPrePlotSpecialHalls.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = room.Value.spawnWeights[Array.IndexOf(room.Value.floorSpawns, floorNumber)] });
+                                lds[i].potentialPostPlotSpecialHalls = lds[i].potentialPostPlotSpecialHalls.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = room.Value.spawnWeights[Array.IndexOf(room.Value.floorSpawns, floorNumber)] });
                                 break;
                             case 1: // Classrooms
                                 group = lds[i].roomGroup.FirstOrDefault(x => x.name == "Class");
@@ -144,6 +144,10 @@ namespace RewriteRoomLoader
                                 {
                                     group.potentialRooms = group.potentialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = room.Value.spawnWeights[Array.IndexOf(room.Value.floorSpawns, floorNumber)] });
                                 }
+                                break;
+                            case 4: // Closet (Handled in Patches)
+                                break;
+                            case 5: // Clinic (Handled in Patches)
                                 break;
                             case 6: // Libraries
                                 lds[i].potentialSpecialRooms = lds[i].potentialSpecialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = room.Value.spawnWeights[Array.IndexOf(room.Value.floorSpawns, floorNumber)] });
@@ -157,43 +161,47 @@ namespace RewriteRoomLoader
                         }
                         sceneObject.MarkAsNeverUnload();
                     }
-                    if (room.Value.inEndless && floorName == "END" && DoesRoomFitWithLevelType(room, lds[i]) && DoesRoomFitWithEndlessSize(room, lds[i]))
+                    if (room.Value.inEndless && floorName == "END" && DoesRoomFitWithLevelType(room, lds[i]) && DoesRoomFitWithEndlessSize(room, sceneObject))
                     {
                         RoomGroup group;
                         switch (room.Value.roomType)
                         {
                             default: // Halls
-                                lds[i].potentialPrePlotSpecialHalls = lds[i].potentialPrePlotSpecialHalls.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, lds[i]) });
+                                lds[i].potentialPostPlotSpecialHalls = lds[i].potentialPostPlotSpecialHalls.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, sceneObject) });
                                 break;
                             case 1: // Classrooms
                                 group = lds[i].roomGroup.FirstOrDefault(x => x.name == "Class");
                                 if (group != null)
                                 {
-                                    group.potentialRooms = group.potentialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, lds[i]) });
+                                    group.potentialRooms = group.potentialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, sceneObject) });
                                 }
                                 break;
                             case 2: // Faculty Rooms
                                 group = lds[i].roomGroup.FirstOrDefault(x => x.name == "Faculty");
                                 if (group != null)
                                 {
-                                    group.potentialRooms = group.potentialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, lds[i]) });
+                                    group.potentialRooms = group.potentialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, sceneObject) });
                                 }
                                 break;
                             case 3: // Offices
                                 group = lds[i].roomGroup.FirstOrDefault(x => x.name == "Office");
                                 if (group != null)
                                 {
-                                    group.potentialRooms = group.potentialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, lds[i]) });
+                                    group.potentialRooms = group.potentialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, sceneObject) });
                                 }
                                 break;
+                            case 4: // Closet (Handled in Patches)
+                                break;
+                            case 5: // Clinic (Handled in Patches)
+                                break;
                             case 6: // Libraries
-                                lds[i].potentialSpecialRooms = lds[i].potentialSpecialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, lds[i]) });
+                                lds[i].potentialSpecialRooms = lds[i].potentialSpecialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, sceneObject) });
                                 break;
                             case 7: // Cafeterias
-                                lds[i].potentialSpecialRooms = lds[i].potentialSpecialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, lds[i]) });
+                                lds[i].potentialSpecialRooms = lds[i].potentialSpecialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, sceneObject) });
                                 break;
                             case 8: // Playgrounds
-                                lds[i].potentialSpecialRooms = lds[i].potentialSpecialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, lds[i]) });
+                                lds[i].potentialSpecialRooms = lds[i].potentialSpecialRooms.AddToArray(new WeightedRoomAsset() { selection = room.Key, weight = GetWeightFromEndlessSize(room, sceneObject) });
                                 break;
                         }
                         sceneObject.MarkAsNeverUnload();
@@ -223,24 +231,32 @@ namespace RewriteRoomLoader
             return false;
         }
 
-        public bool DoesRoomFitWithEndlessSize(KeyValuePair<ExtendedRoomAsset, RoomJsonData> room, LevelObject level)
+        public bool DoesRoomFitWithEndlessSize(KeyValuePair<ExtendedRoomAsset, RoomJsonData> room, SceneObject scene)
         {
-            if (room.Value.floorSpawns.Contains(0) && level.name.Contains("Small"))
+            if (room.Value.floorSpawns.Contains(0) && scene.name.Contains("Small"))
             {
                 return true;
             }
-            if ((room.Value.floorSpawns.Contains(1) || room.Value.floorSpawns.Contains(3)) && level.name.Contains("Medium"))
+            if (room.Value.floorSpawns.Contains(1) && scene.name.Contains("Medium"))
             {
                 return true;
             }
-            if ((room.Value.floorSpawns.Contains(2) || room.Value.floorSpawns.Contains(4)) && level.name.Contains("Large"))
+            if (room.Value.floorSpawns.Contains(2) && scene.name.Contains("Large"))
+            {
+                return true;
+            }
+            if (room.Value.floorSpawns.Contains(3) && scene.name.Contains("Medium"))
+            {
+                return true;
+            }
+            if (room.Value.floorSpawns.Contains(4) && scene.name.Contains("Large"))
             {
                 return true;
             }
             return false;
         }
 
-        public int GetWeightFromEndlessSize(KeyValuePair<ExtendedRoomAsset, RoomJsonData> room, LevelObject level)
+        public int GetWeightFromEndlessSize(KeyValuePair<ExtendedRoomAsset, RoomJsonData> room, SceneObject level)
         {
             if (room.Value.floorSpawns.Contains(0) && level.name.Contains("Small"))
             {

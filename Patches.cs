@@ -5,6 +5,7 @@ using HarmonyLib;
 using System.Linq;
 using System;
 using PlusStudioLevelLoader;
+using PlusLevelStudio.Editor;
 
 namespace RewriteRoomLoader
 {
@@ -42,30 +43,28 @@ namespace RewriteRoomLoader
                     }
                 }
 
-                if (npc.potentialRoomAssets.Length == 1)
+                foreach (KeyValuePair<ExtendedRoomAsset, RoomJsonData> room in RewriteRoomLoader.Instance.loadedRooms)
                 {
-                    foreach (KeyValuePair<ExtendedRoomAsset, RoomJsonData> room in RewriteRoomLoader.Instance.loadedRooms)
+                    if ((npc.Character == Character.Sweep && room.Value.roomType == 4) || (npc.Character == Character.DrReflex && room.Value.roomType == 5))
                     {
-                        if ((npc.Character == Character.Sweep && room.Value.roomType == 4) || (npc.Character == Character.DrReflex && room.Value.roomType == 5)) // 4 = Closet; 5 = Clinic
+                        if (room.Value.floorSpawns.Contains(scene.levelNo) && scene.levelTitle.StartsWith("F") && RewriteRoomLoader.Instance.DoesRoomFitWithLevelType(room, scene.levelObject))
                         {
-                            if (room.Value.floorSpawns.Contains(scene.levelNo) && scene.levelTitle.StartsWith("F") && RewriteRoomLoader.Instance.DoesRoomFitWithLevelType(room, scene.levelObject))
+                            npc.potentialRoomAssets = npc.potentialRoomAssets.AddToArray(new WeightedRoomAsset()
                             {
-                                npc.potentialRoomAssets = npc.potentialRoomAssets.AddToArray(new WeightedRoomAsset()
-                                {
-                                    selection = room.Key,
-                                    weight = room.Value.spawnWeights[Array.IndexOf(room.Value.floorSpawns, scene.levelNo)]
-                                });
-                                Debug.Log("Potential room asset added to " + npc.Character.ToString());
-                            }
-                            if (room.Value.inEndless && scene.levelTitle == "END" && RewriteRoomLoader.Instance.DoesRoomFitWithLevelType(room, scene.levelObject) && RewriteRoomLoader.Instance.DoesRoomFitWithEndlessSize(room, scene.levelObject))
+                                selection = room.Key,
+                                weight = room.Value.spawnWeights[Array.IndexOf(room.Value.floorSpawns, scene.levelNo)]
+                            });
+                            Debug.Log("Potential room asset added to " + npc.Character.ToString());
+                            break;
+                        }
+                        if (room.Value.inEndless && scene.levelTitle == "END" && RewriteRoomLoader.Instance.DoesRoomFitWithLevelType(room, scene.levelObject) && RewriteRoomLoader.Instance.DoesRoomFitWithEndlessSize(room, scene))
+                        {
+                            npc.potentialRoomAssets = npc.potentialRoomAssets.AddToArray(new WeightedRoomAsset()
                             {
-                                npc.potentialRoomAssets = npc.potentialRoomAssets.AddToArray(new WeightedRoomAsset()
-                                {
-                                    selection = room.Key,
-                                    weight = RewriteRoomLoader.Instance.GetWeightFromEndlessSize(room, scene.levelObject)
-                                });
-                                Debug.Log("Potential room asset added to " + npc.Character.ToString() + " (Endless)");
-                            }
+                                selection = room.Key,
+                                weight = RewriteRoomLoader.Instance.GetWeightFromEndlessSize(room, scene)
+                            });
+                            Debug.Log("Potential room asset added to " + npc.Character.ToString() + " (Endless)");
                         }
                     }
                 }
@@ -73,27 +72,28 @@ namespace RewriteRoomLoader
         }
     }
 
-    /*[HarmonyPatch(typeof(BaseGameManager), "Update")]
+    [HarmonyPatch(typeof(BaseGameManager), "Update")]
     class TemporaryTestPatch
     {
         static void Postfix()
         {
             if (Input.GetKeyDown(KeyCode.T))
             {
-                KeyValuePair<ExtendedRoomAsset, RoomJsonData> test = RewriteRoomLoader.Instance.loadedRooms.ElementAt(0);
-
-                Debug.Log("--- TEST ROOM DATA LOG ---");
-                Debug.Log("NAME: " + test.Key.name);
-                Debug.Log("TYPE: " + test.Value.roomType);
-                Debug.Log("FLOOR SPAWNS: " + test.Value.floorSpawns);
-                Debug.Log("FLOOR TYPE SPAWNS: " + test.Value.floorTypeSpawns);
-                Debug.Log("SPAWN WEIGHTS: " + test.Value.spawnWeights);
-                Debug.Log("MIN ITEM VALUE: " + test.Value.minItemValue);
-                Debug.Log("MAX ITEM VALUE: " + test.Value.maxItemValue);
-                Debug.Log("WINDOW CHANCE: " + test.Value.windowChance);
-                Debug.Log("IN ENDLESS: " + test.Value.inEndless);
-                Debug.Log("--------------------------");
+                Debug.Log("--- ROOM DATA LOGS ---");
+                foreach (KeyValuePair<ExtendedRoomAsset, RoomJsonData> test in RewriteRoomLoader.Instance.loadedRooms)
+                {
+                    Debug.Log("NAME: " + test.Key.name);
+                    Debug.Log("TYPE: " + test.Value.roomType);
+                    Debug.Log("FLOOR SPAWNS: " + string.Format("[{0}]", string.Join(", ", test.Value.floorSpawns)));
+                    Debug.Log("FLOOR TYPE SPAWNS: " + string.Format("[{0}]", string.Join(", ", test.Value.floorTypeSpawns)));
+                    Debug.Log("SPAWN WEIGHTS: " + string.Format("[{0}]", string.Join(", ", test.Value.spawnWeights)));
+                    Debug.Log("MIN ITEM VALUE: " + test.Value.minItemValue);
+                    Debug.Log("MAX ITEM VALUE: " + test.Value.maxItemValue);
+                    Debug.Log("WINDOW CHANCE: " + test.Value.windowChance);
+                    Debug.Log("IN ENDLESS: " + test.Value.inEndless);
+                    Debug.Log("--------------------------");
+                }
             }
         }
-    }*/
+    }
 }
