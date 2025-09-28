@@ -16,7 +16,9 @@ using System;
 
 namespace RewriteRoomLoader
 {
-    [BepInPlugin("benjagamess.plusmods.roomloader", "Custom Room Loader", "2.0.0.0")]
+    [BepInPlugin("benjagamess.plusmods.roomloader", "Custom Room Loader", "2.0.0.1")]
+    [BepInDependency("mtm101.rulerp.baldiplus.levelstudioloader")]
+    [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
     public class RewriteRoomLoader : BaseUnityPlugin
     {
         public static RewriteRoomLoader Instance { get; private set; }
